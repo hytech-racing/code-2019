@@ -2,13 +2,12 @@
 #include "HyTech_CAN.h"
 #include "UserInterface.h"
 
-FlexCAN CAN(500000);
 static CAN_message_t msg;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200); // Init serial for PC communication
-  CAN.begin(); // Init CAN for vehicle communication
+  Can0.begin(500000); // Init CAN for vehicle communication
   Serial.println("Enter any key to deactivate BMS watchdog");
 }
 
@@ -26,5 +25,5 @@ void loop() {
   }*/
    msg.id = ID_FH_WATCHDOG_TEST;
    msg.len = 1;
-   CAN.write(msg);
+   Can0.write(msg);
 }

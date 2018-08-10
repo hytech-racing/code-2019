@@ -7,7 +7,6 @@
 #include <FlexCAN.h>
 #include <HyTech_CAN.h>
 
-FlexCAN CAN(500000);
 static CAN_message_t msg_tx;
 static CAN_message_t msg_rx;
 String command_incoming;
@@ -16,7 +15,7 @@ bool wait_confirmation = false;
 
 void setup() {
   Serial.begin(115200);
-  CAN.begin();
+  Can0.begin(500000);
   delay(100);
   Serial.println("CAN transceiver initialized");
   Serial.println("Welcome to RMS Parameters Interface. Please use either:");
@@ -28,7 +27,7 @@ void loop() {
   /*
    * Handle incoming messages
    */
-  while (CAN.read(msg_rx)) {
+  while (Can0.read(msg_rx)) {
     if (msg_rx.id == ID_MC_READ_WRITE_PARAMETER_RESPONSE) {
       MC_read_write_parameter_response message = MC_read_write_parameter_response(msg_rx.buf);
       Serial.print("Address: ");
@@ -66,7 +65,7 @@ void loop() {
     if (wait_confirmation) { // Next command needs to be 'y' to otherwise message is discarded
       wait_confirmation = false;
       if (command == 'y' || command == 'Y') {
-        CAN.write(msg_tx);
+        Can0.write(msg_tx);
         Serial.println("Sent");
       } else {
         Serial.println("Not sent");

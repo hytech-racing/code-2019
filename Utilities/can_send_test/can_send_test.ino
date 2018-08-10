@@ -1,14 +1,13 @@
 #include <FlexCAN.h>
 #include <Metro.h>
 
-FlexCAN CAN(500000);
 CAN_message_t msg;
 Metro timer_can = Metro(10);
 Metro timer_light = Metro(3);
 
 void setup() {
   Serial.begin(115200); //initialize serial for PC communication
-  CAN.begin();
+  Can0.begin(500000);
   delay(200);
   Serial.println("CAN transceiver initialized");
   Serial.println("CAN TEST SENDER");
@@ -23,7 +22,7 @@ void loop() {
   if (timer_can.check()) { // Send a message on CAN
     
     memcpy(msg.buf, &t, sizeof(uint32_t));
-    CAN.write(msg);
+    Can0.write(msg);
     Serial.print("Sent 0x");
     Serial.print(msg.id, HEX);
     Serial.print(": ");

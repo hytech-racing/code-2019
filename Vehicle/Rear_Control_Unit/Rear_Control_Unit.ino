@@ -89,7 +89,6 @@ boolean imd_faulting = false;
 
 boolean inverter_restart = false; // True when restarting the inverter
 
-FlexCAN CAN(500000);
 static CAN_message_t msg;
 static CAN_message_t xb_msg;
 
@@ -101,7 +100,7 @@ void setup() {
     pinMode(SSR_INVERTER, OUTPUT);
 
     Serial.begin(115200);
-    CAN.begin();
+    Can0.begin(500000);
 
     /* Configure CAN rx interrupt */
     interrupts();
@@ -156,7 +155,7 @@ void loop() {
         rcu_status.write(msg.buf);
         msg.id = ID_RCU_STATUS;
         msg.len = sizeof(CAN_message_rcu_status_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         interrupts(); // Enable interrupts
     }
@@ -237,7 +236,7 @@ void loop() {
 }
 
 void parse_can_message() {
-    while (CAN.read(msg)) {
+    while (Can0.read(msg)) {
         if (msg.id == ID_FCU_STATUS) {
             fcu_status.load(msg.buf);
             digitalWrite(SSR_BRAKE_LIGHT, fcu_status.get_brake_pedal_active());

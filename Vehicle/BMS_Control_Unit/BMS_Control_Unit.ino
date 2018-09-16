@@ -1,5 +1,5 @@
 /*
- * HyTech 2018 BMS Control Unit
+ * HyTech 2019 BMS Control Unit
  * Init 2017-04-11
  * Configured for HV Board Rev 4
  * Monitors cell voltages and temperatures, sends BMS_OK signal to close Shutdown Circuit
@@ -135,7 +135,6 @@ uint8_t tx_cfg[TOTAL_IC][6]; // data defining how data will be written to daisy 
 /**
  * CAN Variables
  */
-FlexCAN CAN(500000);
 static CAN_message_t msg;
 
 /**
@@ -174,7 +173,7 @@ void setup() {
     pinMode(WATCHDOG, OUTPUT);
 
     Serial.begin(115200); // Init serial for PC communication
-    CAN.begin(); // Init CAN for vehicle communication
+    Can0.begin(500000); // Init CAN for vehicle communication
 
     /* Configure CAN rx interrupt */
     /*interrupts();
@@ -277,7 +276,7 @@ void loop() {
         bms_status.write(msg.buf);
         msg.id = ID_BMS_STATUS;
         msg.len = sizeof(CAN_message_bms_status_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         msg.timeout = 0;
         interrupts(); // Enable interrupts
@@ -290,19 +289,19 @@ void loop() {
         bms_voltages.write(msg.buf);
         msg.id = ID_BMS_VOLTAGES;
         msg.len = sizeof(CAN_message_bms_voltages_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         bms_temperatures.write(msg.buf);
         msg.id = ID_BMS_TEMPERATURES;
         msg.len = sizeof(CAN_message_bms_temperatures_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         msg.id = ID_BMS_DETAILED_VOLTAGES;
         msg.len = sizeof(CAN_message_bms_detailed_voltages_t);
         for (int i = 0; i < TOTAL_IC; i++) {
             for (int j = 0; j < 3; j++) {
                 bms_detailed_voltages[i][j].write(msg.buf);
-                CAN.write(msg);
+                Can0.write(msg);
             }
         }
 
@@ -310,7 +309,7 @@ void loop() {
         msg.len = sizeof(CAN_message_bms_detailed_temperatures_t);
         for (int i = 0; i < TOTAL_IC; i++) {
             bms_detailed_temperatures[i].write(msg.buf);
-            CAN.write(msg);
+            Can0.write(msg);
         }
 
         msg.timeout = 0;
@@ -941,7 +940,7 @@ void cfg_set_undervoltage_comparison_voltage(uint16_t voltage) {
 }
 
 void parse_can_message() {
-    while (CAN.read(msg)) {
+    while (Can0.read(msg)) {
         if (msg.id == ID_CCU_STATUS) { // Leave discharging mode if CCU status message is received
             if (bms_status.get_state() == BMS_STATE_DISCHARGING) {
                 if (timer_charge_enable_limit.check() || !charge_mode_entered) {

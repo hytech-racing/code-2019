@@ -1,5 +1,5 @@
 /*
- * HyTech 2018 Vehicle Front Control Unit
+ * HyTech 2019 Vehicle Front Control Unit
  * Interface with dashboard lights, buttons, and buzzer.
  * Read pedal sensor values and communicate with motor controller.
  * Configured for Front Control Unit rev7
@@ -99,7 +99,6 @@ uint16_t MAX_TORQUE = 1600; // Torque in Nm * 10
 int16_t MAX_REGEN_TORQUE = 0;
 
 ADC_SPI ADC(ADC_SPI_CS);
-FlexCAN CAN(500000);
 static CAN_message_t msg;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
@@ -116,7 +115,7 @@ void setup() {
     pinMode(SOFTWARE_SHUTDOWN_RELAY, OUTPUT);
 
     Serial.begin(115200); // Init serial for PC communication
-    CAN.begin(); // Init CAN for vehicle communication
+    Can0.begin(500000); // Init CAN for vehicle communication
 
     /* Configure CAN rx interrupt */
     interrupts();
@@ -162,7 +161,7 @@ void processAccelerometer() {
   fcu_accelerometer_values.write(msg.buf);
   msg.id = ID_FCU_ACCELEROMETER;
   msg.len = sizeof(CAN_message_fcu_accelerometer_values_t);
-  CAN.write(msg);
+  Can0.write(msg);
   interrupts();
   
   Serial.print("\n\nACCELEROMETER DATA\n\n");
@@ -189,14 +188,14 @@ void loop() {
         fcu_status.write(msg.buf);
         msg.id = ID_FCU_STATUS;
         msg.len = sizeof(CAN_message_fcu_status_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         // Send second Front Control Unit message
         read_values(); // Calculate new values to send
         fcu_readings.write(msg.buf);
         msg.id = ID_FCU_READINGS;
         msg.len = sizeof(CAN_message_fcu_readings_t);
-        CAN.write(msg);
+        Can0.write(msg);
 
         interrupts(); // Enable interrupts
     }
@@ -325,7 +324,7 @@ void loop() {
             mc_command_message.write(msg.buf);
             msg.id = ID_MC_COMMAND_MESSAGE;
             msg.len = 8;
-            CAN.write(msg);
+            Can0.write(msg);
             interrupts(); // Enable interrupts
         }
         break;
@@ -343,7 +342,7 @@ void loop() {
         mc_command_message.write(msg.buf);
         msg.id = ID_MC_COMMAND_MESSAGE;
         msg.len = 8;
-        CAN.write(msg);
+        Can0.write(msg);
         interrupts(); // Enable interrupts
     }
 
@@ -460,7 +459,7 @@ void loop() {
 }
 
 void parse_can_message() {
-    while (CAN.read(msg)) {
+    while (Can0.read(msg)) {
         if (msg.id == ID_RCU_STATUS) {
             rcu_status.load(msg.buf);
         }
@@ -598,7 +597,7 @@ void reset_inverter() {
     noInterrupts(); // Disable interrupts
     msg.id = ID_RCU_RESTART_MC;
     msg.len = 1;
-    CAN.write(msg);
+    Can0.write(msg);
     interrupts(); // Enable interrupts
 }
 
@@ -626,15 +625,15 @@ void set_state(uint8_t new_state) {
         msg.len = 8;
         for(int i = 0; i < 10; i++) {
             mc_command_message.write(msg.buf); // many enable commands
-            CAN.write(msg);
+            Can0.write(msg);
         }
         mc_command_message.set_inverter_enable(false);
         mc_command_message.write(msg.buf); // disable command
-        CAN.write(msg);
+        Can0.write(msg);
         for(int i = 0; i < 10; i++) {
             mc_command_message.set_inverter_enable(true);
             mc_command_message.write(msg.buf); // many more enable commands
-            CAN.write(msg);
+            Can0.write(msg);
         }
         interrupts(); // Enable interrupts
         Serial.println("FCU Sent enable command");

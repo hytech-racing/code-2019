@@ -1,6 +1,7 @@
 const mqtt = require("mqtt")
 const xbt = require("./xbtools")
-const client = mqtt.connect("mqtts://iot.eclipse.org:8883")
+const client = mqtt.createClient({encoding: 'binary'})
+client.connect("mqtts://iot.eclipse.org:8883")
 
 // let connected = false
 
@@ -20,3 +21,17 @@ const client = mqtt.connect("mqtts://iot.eclipse.org:8883")
 //     }
 // })
 
+let connected = false
+
+client.on("connect", () => {
+    client.subscribe("hytech/car")
+    console.log("Connected and subscribed to hytech/car")
+})
+
+client.on("message", (topic, message) => {
+    if (topic === "hytech/car") {
+        // COBS and checksum decode
+        uncobsed = []
+        ind = xbt.cobsDecode(message, message.length, uncobsed)
+    }
+})

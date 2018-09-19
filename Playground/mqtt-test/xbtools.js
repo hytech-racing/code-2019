@@ -49,5 +49,32 @@ module.exports = {
         }
 
         return writeIndex
+    },
+
+    cobsEncode: function (input, length, out) {
+        let readIndex = 0
+        let writeIndex = 1
+        let codeIndex = 0
+        let code = 1
+
+        while (readIndex < length) {
+            if (input[readIndex] == 0) {
+                out[codeIndex] = code
+                code = 1
+                codeIndex = writeIndex++
+                readIndex++
+            }
+            else {
+                out[writeIndex++] = input[readIndex++]
+                code++
+                if (code === 0xFF) {
+                    out[codeIndex] = code
+                    code = 1
+                    codeIndex = writeIndex++
+                }
+            }
+        }
+        out[codeIndex] = code
+        return writeIndex
     }
 }

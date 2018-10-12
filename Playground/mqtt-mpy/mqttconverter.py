@@ -1,4 +1,4 @@
-from umqtt.simple import MQTTClient
+from umqtt.robust import MQTTClient
 import binascii
 import time
 import sys
@@ -20,15 +20,15 @@ def read_uart():
     while True:
         data = sys.stdin.buffer.read(-1)
         if data is not None:
-            incomingFrame += binascii.hexlify(data, b' ')
+            incomingFrame += binascii.hexlify(data)
             print(incomingFrame)
             if (b'00' in incomingFrame):
                 frame = incomingFrame[0:incomingFrame.find(b'00')]
-                timestamp = str.encode(str(time.localtime()))
+                timestamp = str.encode(str(time.time()))        # epoch time
                 print('sending message...')
-                print(timestamp, frame)
+                print(timestamp, binascii.unhexlify(frame))
                 send_mqtt(timestamp, frame)
-                incomingFrame = incomingFrame[incomingFrame.find(b'00 ') + 3:]
+                incomingFrame = incomingFrame[incomingFrame.find(b'00') + 2:]
 
 def send_mqtt(timestamp, data):
     msg = timestamp + b',' + data

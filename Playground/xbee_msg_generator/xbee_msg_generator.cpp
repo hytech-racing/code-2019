@@ -7,6 +7,8 @@
 #include "../../Libraries/HyTech_CAN/HyTech_CAN.h"
 #include "../../Libraries/XBTools/XBTools.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 
 #define XBEE_PKT_LEN 15
 
@@ -49,10 +51,14 @@ int write_xbee_data() {
     cobs_encode(xb_buf, XBEE_PKT_LEN, cobs_buf);
     cobs_buf[XBEE_PKT_LEN+1] = 0x0;
 
+    std::ofstream outfile;
+    outfile.open("message.txt", std::ios::out);
     for (int i = 0; i < XBEE_PKT_LEN+2; i++) {
-        std::cout << cobs_buf[i];
+        std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)cobs_buf[i];
+        outfile << cobs_buf[i];
     }
     std::cout << std::endl;
+    outfile.close();
 
     //memset(xb_buf, 0, sizeof(CAN_message_t));
     return 1;

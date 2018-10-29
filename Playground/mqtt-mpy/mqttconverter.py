@@ -20,13 +20,16 @@ def read_uart():
         if data is not None:
             incomingFrame += data
             print(binascii.hexlify(incomingFrame))
-            if (b'\x00' in incomingFrame):
-                frame = incomingFrame[0:incomingFrame.find(b'\x00')]
+            while b'\x00' in incomingFrame:
+                end_index = incomingFrame.find(b'\x00')
+                print('First byte:', incomingFrame[0])
+                print('End index:', end_index)
+                frame = incomingFrame[0:end_index]
                 timestamp = str.encode(str(time.time()))        # epoch time
                 print('sending message...', type(frame))
                 print(timestamp, binascii.hexlify(frame))
                 send_mqtt(timestamp, frame)
-                incomingFrame = incomingFrame[incomingFrame.find(b'\x00') + 1:]
+                incomingFrame = incomingFrame[end_index + 1:]
 def send_mqtt(timestamp, data):
     msg = timestamp + b',' + data
     print('sent message')

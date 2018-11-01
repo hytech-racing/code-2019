@@ -3,7 +3,7 @@
  * Brian Cai
  * 3/27/2018
  */
-#include <HyTech_FlexCAN.h>
+#include <FlexCAN.h>
 #include <HyTech17.h>
 #include <Metro.h>
 

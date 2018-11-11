@@ -29,20 +29,20 @@ def read_uart():
                 print('3 zeroes!')
                 send_timestamp()
                 zeros = 0
-            else:
-                incomingFrame += data
-                #print(binascii.hexlify(incomingFrame)) # for verification purposes
-                while b'\x00' in incomingFrame:
-                    end_index = incomingFrame.find(b'\x00')
-                    if end_index >= 16: # only send complete messages to save data
-                        #print('First byte:', incomingFrame[0])
-                        #print('End index:', end_index)
-                        frame = incomingFrame[0:end_index + 1]
-                        timestamp = str.encode(str(time.time()))        # epoch time
-                        #print('sending message...', type(frame))
-                        #print(timestamp, binascii.hexlify(frame))
-                        send_mqtt(timestamp, frame)
-                    incomingFrame = incomingFrame[end_index + 1:]
+                data = data.replace(b'\x00\x00\x00', b'')
+            incomingFrame += data
+            #print(binascii.hexlify(incomingFrame)) # for verification purposes
+            while b'\x00' in incomingFrame:
+                end_index = incomingFrame.find(b'\x00')
+                if end_index >= 16: # only send complete messages to save data
+                    #print('First byte:', incomingFrame[0])
+                    #print('End index:', end_index)
+                    frame = incomingFrame[0:end_index + 1]
+                    timestamp = str.encode(str(time.time()))        # epoch time
+                    #print('sending message...', type(frame))
+                    #print(timestamp, binascii.hexlify(frame))
+                    send_mqtt(timestamp, frame)
+                incomingFrame = incomingFrame[end_index + 1:]
 def send_mqtt(timestamp, data):
     msg = timestamp + b',' + data
     print('XBee says: sent message')

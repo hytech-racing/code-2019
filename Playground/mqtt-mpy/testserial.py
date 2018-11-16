@@ -23,28 +23,27 @@ except Exception as e:
 if ser.isOpen():
 
     try:
-       ser.flushInput() #flush input buffer, discarding all its contents
-       ser.flushOutput()#flush output buffer, aborting current output 
-                 #and discard all that is in buffer
+        ser.flushInput() #flush input buffer, discarding all its contents
+        ser.flushOutput()#flush output buffer, aborting current output 
+                    #and discard all that is in buffer
 
-        #write data
+            #write data
 
-       message = open('message.txt', 'rb') 
-       ser.write(message.readline())
-       print("wrote data")
+        while True:
+            message = open('message.txt', 'rb') 
+            ser.write(message.readline())
+            
+            if ser.inWaiting() > 0:
+                response = ser.read(ser.inWaiting())
+                print(response)
+            time.sleep(0.1)
+            # response = ser.readline()
+            # print(response)
 
-       time.sleep(0.5)  #give the serial port sometime to receive the data
-
-       numOfLines = 0
-
-       while True:
-            response = ser.readline()
-            print("read data: ", response)
-
-       numOfLines = numOfLines + 1
+        #time.sleep(0.05)  #give the serial port sometime to receive the data
 
 
-       ser.close()
+        ser.close()
     except Exception as e:
         print("error communicating...:", str(e))
 

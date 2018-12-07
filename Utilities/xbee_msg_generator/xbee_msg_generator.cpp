@@ -54,7 +54,10 @@ int write_xbee_data() {
     std::ofstream outfile;
     outfile.open("message.txt", std::ios::out);
     for (int i = 0; i < XBEE_PKT_LEN+2; i++) {
-        std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)cobs_buf[i];
+        std::cout << std::hex << std::showbase << std::setfill('0') << std::setw(2) << (int)cobs_buf[i];
+        if (i < XBEE_PKT_LEN + 1) {
+            std::cout << ",";
+        }
         outfile << cobs_buf[i];
     }
     std::cout << std::endl;
@@ -70,7 +73,6 @@ int main() {
     xb_msg.id = ID_FCU_STATUS;
     //xb_msg.len = sizeof(CAN_message_mc_command_message_t);
     xb_msg.len = sizeof(CAN_message_fcu_status_t);
-    command.write(xb_msg.buf);
     write_xbee_data();
     return 0;
 }
